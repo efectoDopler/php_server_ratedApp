@@ -11,7 +11,7 @@
 
 		$body = json_decode(file_get_contents("php://input"), true);
 
-		$result = Films::updateOpinion($body['id'], $body['email'], $body['rate'], $body['opinion']);
+		$result = Films::getUserFilms($body['email']);
 
 		if($result != -1){
 			$sistema["estado"] = 1;

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+ <head>
+ <title>Registro VillaApp</title>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+
+ <script>
+
+    // Valida que no hay campos vacios y que las contraseñas coinciden
+    function validaForm(){
+       
+        if($("#username").val() == ""){
+            window.ob.respuestaRegistro("El campo username no puede estar vacio.");
+            $("#username").focus();       // Esta función coloca el foco de escritura del usuario en el campo Nombre directamente.
+            return false;
+        }
+
+        if($("#password").val() == ""){
+            window.ob.respuestaRegistro("El campo password no puede estar vacio.");
+            $("#password").focus();
+            return false;
+        }
+
+        if($("#confirmar").val() == ""){
+            window.ob.respuestaRegistro("El campo confirmación no puede estar vacio.");
+            $("#confirmar").focus();
+            return false;
+        }
+
+        if($("#password").val() != $("#confirmar").val()){
+            window.ob.respuestaRegistro("Las contraseñas no coinciden.");
+            $("#confirmar").focus();
+            return false;
+        }
+        return true; 
+    }
+
+    // Esta parte del código se ejecutará automáticamente cuando la página esté lista.
+    $(document).ready(function() {   
+
+        // Con esto establecemos la acción por defecto de nuestro botón de enviar.
+        $("#enviar").click( function() {     
+            
+            // Si los datos introducidos en el formulario son validos sigue adelante el proceso de registro
+            if(validaForm()){     
+
+                $usuario = $("#username").val();
+                $password = $("#password").val();
+
+                $.post( "set_usuario.php", { "nombre" : $usuario, "pass" : $password }, null, "json")
+                    .done(function( data, textStatus, jqXHR ){
+
+                        //window.ob.respuestaApp(data.msj);
+
+                        // Solo si el estado es 1 (positivo) se mandan los datos del user a la app
+                        if(data.estado == "1"){
+                            window.ob.datosUsuario("0", $usuario, $password);
+                        }
+
+                    }).fail(function( jqXHR, textStatus, errorThrown ) {
+                        if ( console && console.log ) {
+                            window.ob.respuestaApp("La solicitud ha fallado");
+                        }
+                });
+            }
+        }); 
+
+        $("#reset").click( function(){
+           $("#username").val("");
+           $("#password").val("");
+           $("#confirmar").val("");
+        });
+
+        $("#atras").click( function(){
+            window.location.href = "http://villaapp.esy.es/login.html";
+        });
+
+    });
+ </script>
+
+ </head>
+ <body>
+        <div id="formulario">
+            <form method="post" id="formdata">
+                <label for="username">Usuario: </label><input type="text" name="username" id="username" required="required"></br>
+                <label for="password">Password: </label><input type="password" name="password" id="password" required="required"></br>
+                <label for="confirmar">Confirmar: </label><input type="confirmar" name="confirmar" id="confirmar" required="required"></br>
+                <input type="button" id="enviar" value="Enviar datos">
+                <input type="button" id="reset" value="Reiniciar campos">
+                <input type="button" id="atras" value="Volver atras">
+            </form>
+        </div>
+ </body>
+</html>

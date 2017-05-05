@@ -1,16 +1,17 @@
 <?php
 
-	/**
-	 * Carga todas las opiniones de una pelicula.
-	 */
+/**
+ * Busca un usuario en la base de datos
+ * al introducir un email
+ */
 
 	require 'films.php';
-	
+
 	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 		$body = json_decode(file_get_contents("php://input"), true);
 
-		$result = Films::getUserFilms($body['email']);
+		$result = Films::getNumberRates($body['email']);
 
 		if($result != -1){
 			$sistema["estado"] = 1;
@@ -20,7 +21,7 @@
 
 		else{
 			$sistema["estado"] = 2;
-			$sistema["msj"] = "El usuario no ha opinado sobre ninguna pelicula.";
+			$sistema["msj"] = "false";
 			print json_encode($sistema);
 		}
 

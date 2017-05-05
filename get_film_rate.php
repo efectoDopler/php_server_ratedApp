@@ -1,16 +1,17 @@
 <?php
 
-	/**
-	 * Carga todas las peliculas de la app
-	 */
+/**
+ * Busca un usuario en la base de datos
+ * al introducir un email
+ */
 
 	require 'films.php';
-	
+
 	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 		$body = json_decode(file_get_contents("php://input"), true);
 
-		$result = Films::getAll();
+		$result = Films::getRate($body['id']);
 
 		if($result != -1){
 			$sistema["estado"] = 1;

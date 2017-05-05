@@ -11,11 +11,11 @@
 
 		$body = json_decode(file_get_contents("php://input"), true);
 
-		$result = Films::updateOpinion($body['id'], $body['email'], $body['rate'], $body['opinion']);
+		$result = Films::getAllOpinion();
 
 		if($result != -1){
 			$sistema["estado"] = 1;
-			$sistema["peliculas"] = $result;
+			$sistema["objeto"] = $result;
 			print json_encode($sistema);
 		}
 

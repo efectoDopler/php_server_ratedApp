@@ -7,9 +7,9 @@ class Films{
 	function __construct(){}
 
 	// Devuelve todas las peliculas
-	public static function getAll(){
+	public static function getFilms(){
 		
-		$consulta = "SELECT id, name, synopsis, img, type FROM Films";
+		$consulta = "SELECT DISTINCT id, name, type , synopsis, COALESCE(AVG(rate) , 0) AS rate FROM Films LEFT OUTER JOIN user_rates ON id = id_film GROUP BY id";
 
 		try{
 		
@@ -23,18 +23,58 @@ class Films{
 		
 		} catch(PDOException $e){
 
-			return false;
+			return -1;
 		}
 	}
 
-	// Devuelve las opiniones de una pelicula
-	public static function getFilmOpinions($idPelicula){
+	public static function getRate($id){
+		$consulta = "SELECT AVG(rate) AS rate FROM user_rates WHERE id_film = ?";
+
+		try{
 		
+			// Preparo la consulta
+			$query = Database::getInstance()->getDb()->prepare($consulta);
+			// Lanzo la consulta
+			$query->execute(array($id));
+
+			// Retorno los datos en un arary
+			return $query->fetch(PDO::FETCH_ASSOC);
+		
+		} catch(PDOException $e){
+
+			return -1;
+		}
+
+	}
+
+	public static function getNumberRates($email){
+		$consulta = "SELECT COUNT(*) AS rates FROM user_rates WHERE id_user = ?";
+
+		try{
+		
+			// Preparo la consulta
+			$query = Database::getInstance()->getDb()->prepare($consulta);
+			// Lanzo la consulta
+			$query->execute(array($email));
+
+			// Retorno los datos en un arary
+			return $query->fetch(PDO::FETCH_ASSOC);
+		
+		} catch(PDOException $e){
+
+			return -1;
+		}
+	}
+
+	public static function getFilmOpinions($id){
 		$consulta = "SELECT opinion FROM user_rates WHERE id_film = ?";
 
 		try{
+
+			// Preparo la consulta
 			$query = Database::getInstance()->getDb()->prepare($consulta);
-			$query->execute(array($idPelicula));
+			// Lanzo la consulta
+			$query->execute(array($id));
 
 			// Retorno los datos en un arary
 			return $query->fetchAll(PDO::FETCH_ASSOC);
@@ -45,32 +85,15 @@ class Films{
 		}
 	}
 
-	// Devuelve las opiniones de una pelicula
-	public static function getFilmRate($idPelicula){
-		
-		$consulta = "SELECT AVG(rate) FROM user_rates WHERE id_film = ?";
-
-		try{
-			$query = Database::getInstance()->getDb()->prepare($consulta);
-			$query->execute(array($idPelicula));
-
-			// Retorno los datos en un arary
-			return $query->fetchAll(PDO::FETCH_ASSOC);
-		
-		} catch(PDOException $e){
-
-			return -1;
-		}
-	}
-
-	// Devuelve las peliculas votadas por un usuario
 	public static function getUserFilms($email){
-		
-		$consulta = "SELECT id_film, rate, opinion FROM user_rates WHERE id_user = ?";
+		$consulta = "SELECT id, name, type, synopsis, rate, opinion FROM Films, user_rates WHERE id = id_film AND id_user = ?";
 
 		try{
+		
+			// Preparo la consulta
 			$query = Database::getInstance()->getDb()->prepare($consulta);
-			$query->execute(array($idPelicula));
+			// Lanzo la consulta
+			$query->execute(array($email));
 
 			// Retorno los datos en un arary
 			return $query->fetchAll(PDO::FETCH_ASSOC);
@@ -79,18 +102,32 @@ class Films{
 
 			return -1;
 		}
+
 	}
 
-	// Devuelve las peliculas votadas por un usuario
-	public static function setUserOpinion($idPelicula, $email, $rate, $opinion){
-		
-		$consulta = "INSERT INTO user_rates VALUES (?, ?, ?, ?)";
+	public static function insertOpinion($id, $email, $rate, $opinion){
+		$consulta = "INSERT INTO user_rates VALUES(?, ?, ?, ?)";
 
 		try{
 			$query = Database::getInstance()->getDb()->prepare($consulta);
-			$query->execute(array($idPelicula, $email, $rate, $opinion));
+			$query->execute(array($id, $email, $rate, $opinion));
 
-			// Retorno los datos en un arary
+			return "ok";
+
+		} catch(PDOException $e){
+
+			return -1;
+		}
+	}
+
+	public static function updateOpinion($id, $email, $rate, $opinion){
+		$consulta = "UPDATE user_rates SET rate = ? , opinion = ? WHERE  id_film = ? AND id_user = ?";
+
+		try{
+
+			$query = Database::getInstance()->getDb()->prepare($consulta);
+			$query->execute(array($rate, $opinion, $id, $email));
+
 			return "ok";
 		
 		} catch(PDOException $e){
@@ -99,38 +136,16 @@ class Films{
 		}
 	}
 
-	// Actualiza la puntuacion que ha dado un usuario a una pelicula
-	public static function updateFilmRate($idPelicula, $email, $rate){
-
-		$consulta = "UPDATE user_rates SET rate = ? WHERE id_user = ? AND id_film = ?";
-
-		try{
-
-			$query = Database::getInstance()->getDb()->prepare($consulta);
-			$query->execute(array($rate, $email, $idPelicula));
-
-			return "ok";
-		
-		} catch(PDOException $e){
-
-			return -1;
-		}
-	}
-
-	// Actualiza la opinion que ha dado un usuario a una pelicula
-	public static function updateFilmOpinion($idPelicula, $email, $opinion){
-
-		$consulta = "UPDATE user_rates SET opinion = ? WHERE id_user = ? AND id_film = ?";
+	// Prueba para servicios
+	public static function getAllOpinion(){
+		$consulta = "SELECT * FROM user_rates";
 
 		try{
-
 			$query = Database::getInstance()->getDb()->prepare($consulta);
-			$query->execute(array($opinion, $email, $idPelicula));
+			$query->execute();
 
-			return "ok";
-		
+			return $query->fetchAll(PDO::FETCH_ASSOC);
 		} catch(PDOException $e){
-
 			return -1;
 		}
 	}
